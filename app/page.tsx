@@ -1,14 +1,12 @@
 import { redirect } from 'next/navigation';
-import { configured } from '@/lib/supabase/config';
-import { serverSupabase } from '@/lib/supabase/server';
+import { configured, requireOwner } from '@/lib/auth/server';
 import Dashboard from '@/components/Dashboard';
 export const dynamic = 'force-dynamic';
 export default async function Home() {
   if (!configured()) {
-    return <main className="setup-screen"><div className="setup-card"><div className="brandLogo">AI × MAD</div><div className="mini">INDEPENDENT WEB APP</div><h1>Studio OS is ready to configure.</h1><p>This independent GitHub + Vercel build is prepared, but requires a dedicated Supabase project before live CRM and sign-in can operate.</p><p>Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> in Vercel, apply the SQL migration, and redeploy.</p></div></main>;
+    return <main className="setup-screen"><div className="setup-card"><div className="brandLogo">AI × MAD</div><div className="mini">INDEPENDENT WEB APP</div><h1>Neon backend is ready.</h1><p>The dedicated Neon database and Managed Better Auth are provisioned. Hosting environment variables still need to be configured in Vercel to enable your private studio login.</p><p>Configure <code>DATABASE_URL</code>, <code>NEON_AUTH_BASE_URL</code>, <code>NEON_AUTH_COOKIE_SECRET</code> and <code>STUDIO_OWNER_EMAIL</code>, then redeploy.</p></div></main>;
   }
-  const supabase = await serverSupabase();
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims?.sub) redirect('/login');
-  return <Dashboard userId={data.claims.sub} />;
+  const user = await requireOwner();
+  if (!user) redirect('/login');
+  return <Dashboard userId={user.id} />;
 }

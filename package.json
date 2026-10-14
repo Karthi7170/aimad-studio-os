@@ -11,12 +11,12 @@
     "check:security": "node scripts/security-check.cjs"
   },
   "dependencies": {
-    "@supabase/ssr": "0.7.0",
-    "@supabase/supabase-js": "2.57.0",
     "lucide-react": "0.468.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "@neondatabase/auth": "0.6.0-beta",
+    "@neondatabase/serverless": "1.2.0"
   },
   "devDependencies": {
     "@types/node": "22.10.2",

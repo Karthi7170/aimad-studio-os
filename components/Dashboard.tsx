@@ -6,7 +6,7 @@ import {
   CircleCheck, Clock3, Code2, Copy, FileText, Github, LayoutDashboard, LogOut, Menu,
   MoreHorizontal, Plus, Rocket, Search, ShieldCheck, Sparkles, Target, UsersRound, X
 } from 'lucide-react';
-import { browserSupabase } from '@/lib/supabase/client';
+import { authClient } from '@/lib/auth/client';
 import {
   leadScore, leadStages, money, projectPhases,
   type LeadData, type LeadStatus, type ProjectData, type ProjectPhase, type ProposalData, type Kind, type StudioRecord
@@ -49,16 +49,17 @@ export default function Dashboard({ userId }: { userId: string }) {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const notify = useCallback((text: string) => { setToast(text); window.setTimeout(() => setToast(''), 4200); }, []);
-  const refresh = useCallback(async () => {
+  const r  const refresh = useCallback(async () => {
     try {
-      const { data, error } = await browserSupabase().from('studio_records').select('id,kind,data,created_at,user_id').order('created_at', { ascending: false });
-      if (error) throw error;
-      setRecords((data || []) as StudioRecord[]);
+      const response = await fetch('/api/studio', { cache: 'no-store', credentials: 'same-origin' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to fetch your studio records');
+      setRecords(result.records as StudioRecord[]);
       setSyncError('');
     } catch (e) { setSyncError(e instanceof Error ? e.message : 'Could not load saved records.'); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void refresh(); }, [refresh]);
+ct(() => { void refresh(); }, [refresh]);
 
   const leads = useMemo(() => records.filter(r => r.kind === 'lead').map(r => ({ ...r, value: r.data as LeadData })), [records]);
   const proposals = useMemo(() => records.filter(r => r.kind === 'proposal').map(r => ({ ...r, value: r.data as ProposalData })), [records]);
@@ -67,6 +68,18 @@ export default function Dashboard({ userId }: { userId: string }) {
   const pipeline = proposals.filter(r => r.value.status !== 'Rejected').reduce((sum, r) => sum + (Number(r.value.amount) || 0), 0);
   const selectTab = (next: Section) => { setTab(next); setMore(false); setQuery(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const newRecord = (kind: Kind) => { setEditor(kind); setDraft({ ...blank }); setMore(false); };
+
+  async function mutate(action: 'create' | 'update' | 'delete', payload: Record<string, unknown>) {
+    const response = await fetch('/api/studio', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Unable to save record.');
+    return result;
+  }
 
   async function insert() {
     if (!editor) return;
@@ -86,8 +99,7 @@ export default function Dashboard({ userId }: { userId: string }) {
     }
     setWorking(true);
     try {
-      const { error } = await browserSupabase().from('studio_records').insert({ user_id: userId, kind: editor, data });
-      if (error) throw error;
+      await mutate('create', { kind: editor, data });
       setEditor(null); notify('Saved securely.'); await refresh();
     } catch (e) { notify(e instanceof Error ? e.message : 'Save failed.'); }
     finally { setWorking(false); }
@@ -96,8 +108,7 @@ export default function Dashboard({ userId }: { userId: string }) {
   async function update(id: string, value: LeadData | ProposalData | ProjectData) {
     setWorking(true);
     try {
-      const { error } = await browserSupabase().from('studio_records').update({ data: value, updated_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
-      if (error) throw error;
+      await mutate('update', { id, data: value });
       await refresh();
     } catch (e) { notify(e instanceof Error ? e.message : 'Could not update this record.'); }
     finally { setWorking(false); }
@@ -105,14 +116,13 @@ export default function Dashboard({ userId }: { userId: string }) {
   async function remove(id: string) {
     setWorking(true);
     try {
-      const { error } = await browserSupabase().from('studio_records').delete().eq('id', id).eq('user_id', userId);
-      if (error) throw error;
+      await mutate('delete', { id });
       await refresh(); setDeleting(null); notify('Record deleted.');
     } catch (e) { notify(e instanceof Error ? e.message : 'Could not delete record.'); }
     finally { setWorking(false); }
   }
   async function signOut() {
-    await browserSupabase().auth.signOut(); router.replace('/login'); router.refresh();
+    await authClient.signOut(); router.replace('/login'); router.refresh();
   }
   async function copyQuote(q: ProposalData) {
     const content = `AI x MAD Studio — DRAFT QUOTATION\nClient: ${q.client}\nService: ${q.service}\nScope: ${q.description || 'To be agreed'}\nProposed amount: ${money(q.amount)}\n\nSubject to confirmation of scope, timeline and terms. This draft is not an invoice.`;
