@@ -49,7 +49,7 @@ export default function Dashboard({ userId }: { userId: string }) {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const notify = useCallback((text: string) => { setToast(text); window.setTimeout(() => setToast(''), 4200); }, []);
-  const r  const refresh = useCallback(async () => {
+  const refresh = useCallback(async () => {
     try {
       const response = await fetch('/api/studio', { cache: 'no-store', credentials: 'same-origin' });
       const result = await response.json();
@@ -59,7 +59,7 @@ export default function Dashboard({ userId }: { userId: string }) {
     } catch (e) { setSyncError(e instanceof Error ? e.message : 'Could not load saved records.'); }
     finally { setLoading(false); }
   }, []);
-ct(() => { void refresh(); }, [refresh]);
+  useEffect(() => { void refresh(); }, [refresh]);
 
   const leads = useMemo(() => records.filter(r => r.kind === 'lead').map(r => ({ ...r, value: r.data as LeadData })), [records]);
   const proposals = useMemo(() => records.filter(r => r.kind === 'proposal').map(r => ({ ...r, value: r.data as ProposalData })), [records]);
