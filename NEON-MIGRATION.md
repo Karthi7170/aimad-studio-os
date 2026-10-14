@@ -9,7 +9,7 @@ Do not enable Neon Data API on this project unless appropriate grants and RLS po
 DATABASE_URL=(copy from Neon Console > Connect, pooled or direct for serverless HTTP)
 NEON_AUTH_BASE_URL=(copy Neon Auth URL, with /studio_os/auth)
 NEON_AUTH_COOKIE_SECRET=(generate an independent 32+ character random secret)
-STUDIO_OWNER_EMAIL=karthikeyank7170@gmail.com
+STUDIO_OWNER_EMAIL=OWNER_EMAIL@example.com
 ```
 Never paste production DATABASE_URL or NEON_AUTH_COOKIE_SECRET into GitHub or chat.
 The previous Supabase migration file is obsolete and should not be applied to Neon.

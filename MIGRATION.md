@@ -16,7 +16,7 @@
    - `DATABASE_URL`: copy from **Neon Console → Connect**, database `studio_os`.
    - `NEON_AUTH_BASE_URL`: copy from Neon → Auth → Configuration.
    - `NEON_AUTH_COOKIE_SECRET`: generate a unique 32+-character random secret.
-   - `STUDIO_OWNER_EMAIL`: the verified Google email that should control the studio (currently configured in the sample file as `karthikeyank7170@gmail.com`; confirm account choice before production).
+   - `STUDIO_OWNER_EMAIL`: the verified Google email that should control the studio (currently configured in the sample file as `OWNER_EMAIL@example.com`; confirm account choice before production).
 3. In Neon Auth → Trusted Domains, add the **actual Vercel production hostname**, after Vercel allocates one.
 4. Use the owner's Google account to sign in (shared OAuth for testing). For business production, configure owned Google OAuth credentials and email delivery as appropriate.
 5. Test private authentication, create/update/delete a test lead, quotation and project, sign out/in, and verify owner-only access. Test the PWA in iPhone 17 Safari.
