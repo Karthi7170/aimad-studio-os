@@ -35,7 +35,7 @@ npm run dev
 
 ## Deploy to Vercel
 
-1. Create an empty, private repository on GitHub, then upload or push these files to `main`.
+1. GitHub source is already pushed to `Karthi7170/aimad-studio-os` on `main`. Review its current public visibility if you prefer a private internal repository.
 2. Import the repo in Vercel. Framework: Next.js; root directory: `/`.
 3. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and optional `NEXT_PUBLIC_APP_URL` to the Vercel project (Production, Preview as appropriate).
 4. Deploy, then test login, add/edit lead, quotation, project, sign-out and sign-in.

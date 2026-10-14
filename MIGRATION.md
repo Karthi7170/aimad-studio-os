@@ -4,24 +4,21 @@
 
 - **Independent source package complete:** Next.js 16, iPhone-style PWA, CRM, quotation and project workflows, Supabase Auth/RLS.
 - **Source-level checks passed:** TypeScript/TSX parsing and security invariants (`npm run check:syntax` and `npm run check:security` after installing dependencies).
-- **Not yet live on GitHub/Vercel:** A new GitHub repository has not been created and the Vercel connector cannot access the selected team scope (403). Do not interpret the existence of a ZIP package as an actual remote deployment.
+- **GitHub source is live:** https://github.com/Karthi7170/aimad-studio-os (main), and GitHub Actions has passed TypeScript and production build checks.
+- **Vercel is NOT deployed:** The connected Vercel account returns HTTP 403 for team scope `karthik-s-projects-2e6c9cbc`. Reauthorize the proper team in Vercel, then import the repository. The account is presently on Hobby; commercial deployment requires a commercial-eligible plan.
+- **Supabase NOT configured:** Create a separate database for this app; no authentication or CRM data will work independently until it is set up.
 - **Live Floot app stays online:** https://aimad-studio-os.floot.app — do not unpublish until the new version passes full authentication and CRUD tests.
 - **Database records:** A read-only check found zero leads/quotes/projects at migration preparation time. Floot logins/passwords are not transferable to Supabase Auth.
 
-## Step A — Create a PRIVATE GitHub repository
+## Step A — GitHub repository (completed; review visibility)
 
-Create a private empty repository at https://github.com/new with the name `aimad-studio-os`. Do not add a README or .gitignore in GitHub if you plan to push the existing local commit. Then from a computer with Git:
+The source is already committed to https://github.com/Karthi7170/aimad-studio-os and GitHub Actions builds it. **The repository is currently PUBLIC.** For internal business source, consider changing it to **private** under GitHub repository Settings → General → Danger Zone → Change repository visibility. To clone locally:
 
 ```sh
-# From the extracted aimad-studio-os-vercel directory:
-git init -b main   # omit if already initialized
-git add .
-git commit -m "Initial independent AI x MAD Studio OS"
-git remote add origin https://github.com/Karthi7170/aimad-studio-os.git
-git push -u origin main
+git clone https://github.com/Karthi7170/aimad-studio-os.git
 ```
 
-Or, without command-line Git, extract the ZIP, open the empty repo and use **Add file → Upload files** to upload the source folder contents, retaining their paths. Ensure `app/`, `components/`, `lib/`, `public/`, `supabase/`, `.github/`, `package.json`, `tsconfig.json`, and `proxy.ts` are present at repository root. Never upload `.env.local`, `.vercel/` or `node_modules/`.
+All code and icons are present in the GitHub repository. Never upload `.env.local`, `.vercel/` or `node_modules/`.
 
 ## Step B — Dedicated Supabase project
 
