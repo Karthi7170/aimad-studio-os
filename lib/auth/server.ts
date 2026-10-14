@@ -11,6 +11,6 @@ export async function requireOwner() {
   if (!configured()) return null;
   const { data: session } = await getAuth().getSession();
   const expected = process.env.STUDIO_OWNER_EMAIL?.trim().toLowerCase();
-  if (!session?.user?.id || !session.user.email || session.user.email.toLowerCase() !== expected) return null;
+  if (!session?.user?.id || session.user.emailVerified !== true || !session.user.email || session.user.email.toLowerCase() !== expected) return null;
   return { id: session.user.id, email: session.user.email };
 }

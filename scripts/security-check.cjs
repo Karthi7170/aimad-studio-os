@@ -12,7 +12,7 @@ const login = read('app/login/page.tsx');
 const checks = {
   'RLS enabled': /alter table public\.studio_records enable row level security/.test(migration),
   'Public privileges revoked': /revoke all on public\.studio_records from public/.test(migration),
-  'Owner email verified on server': auth.includes('session.user.email.toLowerCase() !== expected'),
+  'Verified owner email required': auth.includes('session.user.emailVerified !== true') && auth.includes('session.user.email.toLowerCase() !== expected'),
   'Dashboard requires owner': app.includes('await requireOwner()') && app.includes("redirect('/login')"),
   'API actions require owner': api.includes('const auth=await owner()') && api.includes('requireOwner()'),
   'All SQL reads owner-filtered': api.includes('WHERE user_id=${auth.user!.id}'),
