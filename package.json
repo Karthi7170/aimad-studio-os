@@ -8,7 +8,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "check:syntax": "node scripts/source-check.cjs",
-    "check:security": "node scripts/security-check.cjs"
+    "check:security": "node scripts/security-check.cjs",
+    "smoke:unconfigured": "node scripts/smoke-unconfigured.cjs"
   },
   "dependencies": {
     "lucide-react": "0.468.0",
