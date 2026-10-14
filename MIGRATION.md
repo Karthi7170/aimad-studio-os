@@ -1,52 +1,36 @@
-# AI x MAD Studio OS — GitHub/Vercel migration handoff
+# AI x MAD Studio OS — GitHub / Neon / Vercel handoff
 
-## Current status (2026-10-14)
+**Current status (14 October 2026):**
+- GitHub source: [Karthi7170/aimad-studio-os](https://github.com/Karthi7170/aimad-studio-os), branch `main`.
+- Neon database **CREATED**: project `hidden-cherry-39169820`, database `studio_os`, Singapore.
+- Neon Managed Better Auth **ENABLED**. The `public.studio_records` table exists, RLS is enabled, and data rows are currently empty.
+- Server-only Next.js CRM API and Neon Auth integration committed. TypeScript, syntax, source-security checks, and production build passed in GitHub Actions.
+- **NOT YET DEPLOYED TO VERCEL**. The currently connected Vercel account rejects access to the intended team with HTTP 403.
+- **NOT YET LIVE-TESTED**: production sign-in, authenticated CRUD, and iPhone Safari.
+- Floot app stays online: https://aimad-studio-os.floot.app
 
-- **Independent source package complete:** Next.js 16, iPhone-style PWA, CRM, quotation and project workflows, Supabase Auth/RLS.
-- **Source-level checks passed:** TypeScript/TSX parsing and security invariants (`npm run check:syntax` and `npm run check:security` after installing dependencies).
-- **GitHub source is live:** https://github.com/Karthi7170/aimad-studio-os (main), and GitHub Actions has passed TypeScript and production build checks.
-- **Vercel is NOT deployed:** The connected Vercel account returns HTTP 403 for team scope `karthik-s-projects-2e6c9cbc`. Reauthorize the proper team in Vercel, then import the repository. The account is presently on Hobby; commercial deployment requires a commercial-eligible plan.
-- **Supabase NOT configured:** Create a separate database for this app; no authentication or CRM data will work independently until it is set up.
-- **Live Floot app stays online:** https://aimad-studio-os.floot.app — do not unpublish until the new version passes full authentication and CRUD tests.
-- **Database records:** A read-only check found zero leads/quotes/projects at migration preparation time. Floot logins/passwords are not transferable to Supabase Auth.
+## Deployment steps
 
-## Step A — GitHub repository (completed; review visibility)
+1. In Vercel, reconnect/select an authorized team, then import `Karthi7170/aimad-studio-os` as a **Next.js** project.
+2. Add these **server-only** environment variables in Vercel Project → Settings → Environment Variables:
+   - `DATABASE_URL`: copy from **Neon Console → Connect**, database `studio_os`.
+   - `NEON_AUTH_BASE_URL`: copy from Neon → Auth → Configuration.
+   - `NEON_AUTH_COOKIE_SECRET`: generate a unique 32+-character random secret.
+   - `STUDIO_OWNER_EMAIL`: the verified Google email that should control the studio (currently configured in the sample file as `karthikeyank7170@gmail.com`; confirm account choice before production).
+3. In Neon Auth → Trusted Domains, add the **actual Vercel production hostname**, after Vercel allocates one.
+4. Use the owner's Google account to sign in (shared OAuth for testing). For business production, configure owned Google OAuth credentials and email delivery as appropriate.
+5. Test private authentication, create/update/delete a test lead, quotation and project, sign out/in, and verify owner-only access. Test the PWA in iPhone 17 Safari.
+6. **Keep the existing Floot app online until every acceptance check passes.**
 
-The source is already committed to https://github.com/Karthi7170/aimad-studio-os and GitHub Actions builds it. **The repository is currently PUBLIC.** For internal business source, consider changing it to **private** under GitHub repository Settings → General → Danger Zone → Change repository visibility. To clone locally:
+The SQL schema is at `neon/migrations/20261014_studio_records.sql`. **Do not use earlier Supabase migration instructions.**
 
-```sh
-git clone https://github.com/Karthi7170/aimad-studio-os.git
-```
+## Security notes
 
-All code and icons are present in the GitHub repository. Never upload `.env.local`, `.vercel/` or `node_modules/`.
+- The database password and auth cookie secret must never be committed to GitHub or used with `NEXT_PUBLIC_` variable names.
+- All database operations are processed server-side; SQL predicates restrict reads and writes to the verified signed-in user ID.
+- CRM table RLS is enabled; public privileges are revoked. The Neon Data API should remain disabled for this project unless separate, reviewed grants/RLS policies are introduced.
+- The app disables public email/password sign-up through its auth routes and restricts studio data access to `STUDIO_OWNER_EMAIL`.
+- The current GitHub repository is public. Consider changing visibility if you want private company source code.
+- AI API calls, automated lead sourcing, WhatsApp outreach, GitHub PR syncing and live Vercel deploy triggers are not implemented yet.
 
-## Step B — Dedicated Supabase project
-
-Create a **new** Supabase project for Studio OS in your chosen organization. Do not reuse the existing VIP-Hunter or GCS databases. In its SQL Editor apply `supabase/migrations/20261014_studio_os.sql` only once. Verify table RLS is ON and policies use `auth.uid() = user_id`. Invite the studio owner to Supabase Auth; do not expose public registration unless needed. Configure the project Site URL and auth redirect allowlist to match the Vercel domain. Invite/reset passwords rather than attempting to copy Floot's password hashes.
-
-## Step C — Import in Vercel
-
-Reconnect Vercel with access to the right team if needed. Use **Add New → Project → Import Git Repository**, choose `Karthi7170/aimad-studio-os`, framework **Next.js**, root `/`. For a commercial business app use a commercial-eligible Vercel plan. Add environment variables in Vercel (not in GitHub):
-
-```text
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_PUBLIC_KEY
-```
-
-These are client-safe public values; never add a Supabase service-role or secret key to NEXT_PUBLIC variables. Deploy first to a preview URL; only promote to production after tests.
-
-## Step D — Acceptance checks
-
-1. `npm install && npm run check:syntax && npm run check:security && npm run typecheck && npm run build` succeeds in CI.
-2. Unauthenticated `/` redirects to `/login`; unauthenticated database access returns no records.
-3. Password recovery email and redirect URLs work on the new domain.
-4. After signing in, create one **real or clearly labeled test** lead, reload, change its status, then delete it.
-5. Create a quotation draft; check amount, copy text, reload persistence, and delete it.
-6. Create and move a project through stages, check it persists across sign-outs.
-7. On iPhone 17 Safari: check 5-tab bottom nav, More sheet, keyboard and safe areas; install via Share → Add to Home Screen.
-8. Verify owner-based access isolation with a second account, if team access is enabled.
-9. Only then redirect users and optionally unpublish Floot. Keep a database backup and recovery plan.
-
-## Operational limitations
-
-This is a manual-outreach studio CRM. AI calls, WhatsApp sending, automatic lead discovery, GitHub PR sync and Vercel deployment triggers remain integration placeholders. A source-code migration does not make them operational.
+Commercial hosting requires a Vercel plan eligible for business use; Hobby is not for commercial production.
